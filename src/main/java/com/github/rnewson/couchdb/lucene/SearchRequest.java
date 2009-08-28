@@ -16,11 +16,12 @@ package com.github.rnewson.couchdb.lucene;
  * limitations under the License.
  */
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import java.lang.Math;
+import java.lang.Math;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
@@ -164,9 +165,11 @@ public final class SearchRequest {
 
             final Set terms = new HashSet();
             rewritten_q.extractTerms(terms);
-            for (final Object term : terms) {
+            Iterator i = terms.iterator();
+            while (i.hasNext()) {
+                final Object term = i.next();
                 final int freq = searcher.docFreq((Term) term);
-                freqs.put(term, freq);
+                freqs.put(term, new Integer(freq));
             }
             json.put("freqs", freqs);
         } else {
@@ -181,7 +184,7 @@ public final class SearchRequest {
             }
             stopWatch.lap("search");
             // Fetch matches (if any).
-            final int max = max(0, min(td.totalHits - skip, limit));
+            final int max = Math.max(0, Math.min(td.totalHits - skip, limit));
 
             final JSONArray rows = new JSONArray();
             final String[] fetch_ids = new String[max];
@@ -191,7 +194,9 @@ public final class SearchRequest {
                 final JSONObject fields = new JSONObject();
 
                 // Include stored fields.
-                for (Object f : doc.getFields()) {
+                Iterator it = doc.getFields().iterator();
+                while (it.hasNext()) {
+                    Object f = it.next();
                     Field fld = (Field) f;
 
                     if (!fld.isStored())
@@ -220,7 +225,7 @@ public final class SearchRequest {
                     }
                 }
 
-                row.put("score", td.scoreDocs[i].score);
+                row.put("score", new Float(td.scoreDocs[i].score));
                 // Include sort order (if any).
                 if (td instanceof TopFieldDocs) {
                     final FieldDoc fd = (FieldDoc) ((TopFieldDocs) td).scoreDocs[i];
@@ -244,11 +249,11 @@ public final class SearchRequest {
             }
             stopWatch.lap("fetch");
 
-            json.put("skip", skip);
-            json.put("limit", limit);
-            json.put("total_rows", td.totalHits);
-            json.put("search_duration", stopWatch.getElapsed("search"));
-            json.put("fetch_duration", stopWatch.getElapsed("fetch"));
+            json.put("skip", new Integer(skip));
+            json.put("limit", new Integer(limit));
+            json.put("total_rows", new Integer(td.totalHits));
+            json.put("search_duration", new Long(stopWatch.getElapsed("search")));
+            json.put("fetch_duration", new Long(stopWatch.getElapsed("fetch")));
             // Include sort info (if requested).
             if (td instanceof TopFieldDocs) {
                 json.put("sort_order", toString(((TopFieldDocs) td).fields));
@@ -257,7 +262,7 @@ public final class SearchRequest {
         }
 
         final JSONObject result = new JSONObject();
-        result.put("code", 200);
+        result.put("code", new Integer(200));
 
         final JSONObject headers = new JSONObject();
         headers.put("Content-Type", contentType);
@@ -270,7 +275,7 @@ public final class SearchRequest {
             headers.put("Content-Type", "text/plain;charset=utf-8");
             result.put("body", escape(json.toString(2)));
         } else if (callback != null)
-            result.put("body", String.format("%s(%s)", callback, json));
+            result.put("body", callback + "(" + json + ")");
         else
             result.put("json", json);
 
@@ -281,7 +286,7 @@ public final class SearchRequest {
     }
 
     private String escape(final String str) {
-        final StringBuilder builder = new StringBuilder(str.length() + 10);
+        final StringBuffer builder = new StringBuffer(str.length() + 10);
         builder.append(DOUBLE_QUOTE);
         for (int i = 0; i < str.length(); i++) {
             final char c = str.charAt(i);
@@ -300,7 +305,8 @@ public final class SearchRequest {
 
     private String toString(final SortField[] sortFields) {
         final JSONArray result = new JSONArray();
-        for (final SortField field : sortFields) {
+        for (int i = 0; i < sortFields.length; i++) {
+            final SortField field = sortFields[i];
             final JSONObject col = new JSONObject();
             col.element("field", field.getField());
             col.element("reverse", field.getReverse());

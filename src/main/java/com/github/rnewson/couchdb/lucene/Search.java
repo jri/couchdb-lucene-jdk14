@@ -18,7 +18,7 @@ package com.github.rnewson.couchdb.lucene;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Scanner;
+import java.util.Iterator;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
@@ -47,7 +47,13 @@ public final class Search {
             IndexReader reader = null;
             IndexSearcher searcher = null;
             final Scanner scanner = new Scanner(System.in);
-            while (scanner.hasNextLine()) {
+            while (true) {
+
+                final String line = scanner.nextLine();
+                if (line == null) {
+                    break;
+                }
+
                 if (reader == null) {
                     // Open a reader and searcher if index exists.
                     if (IndexReader.indexExists(Config.INDEX_DIR)) {
@@ -56,8 +62,6 @@ public final class Search {
                         searcher = new IndexSearcher(reader);
                     }
                 }
-
-                final String line = scanner.nextLine();
 
                 // Process search request if index exists.
                 if (searcher == null) {
@@ -130,22 +134,24 @@ public final class Search {
                     // info.
                     if (query.keySet().isEmpty()) {
                         final JSONObject json = new JSONObject();
-                        json.put("current", reader.isCurrent());
-                        json.put("disk_size", size(reader.directory()));
-                        json.put("doc_count", reader.numDocs());
-                        json.put("doc_del_count", reader.numDeletedDocs());
+                        json.put("current", new Boolean(reader.isCurrent()));
+                        json.put("disk_size", new Long (size(reader.directory())));
+                        json.put("doc_count", new Integer(reader.numDocs()));
+                        json.put("doc_del_count", new Integer(reader.numDeletedDocs()));
                         final JSONArray fields = new JSONArray();
-                        for (final Object field : reader.getFieldNames(FieldOption.INDEXED)) {
+                        Iterator i = reader.getFieldNames(FieldOption.INDEXED).iterator();
+                        while (i.hasNext()) {
+                            final Object field = i.next();
                             if (((String) field).startsWith("_"))
                                 continue;
                             fields.add(field);
                         }
                         json.put("fields", fields);
-                        json.put("last_modified", IndexReader.lastModified(Config.INDEX_DIR));
-                        json.put("optimized", reader.isOptimized());
+                        json.put("last_modified", new Long(IndexReader.lastModified(Config.INDEX_DIR)));
+                        json.put("optimized", new Boolean(reader.isOptimized()));
 
                         final JSONObject info = new JSONObject();
-                        info.put("code", 200);
+                        info.put("code", new Integer(200));
                         info.put("json", json);
                         final JSONObject headers = new JSONObject();
                         headers.put("Content-Type", "text/plain");
@@ -170,7 +176,9 @@ public final class Search {
 
     private static long size(final Directory dir) throws IOException {
         long result = 0;
-        for (final String name : dir.list()) {
+        String[] files = dir.list();
+        for (int i = 0; i < files.length; i++) {
+            final String name = files[i];
             result += dir.fileLength(name);
         }
         return result;

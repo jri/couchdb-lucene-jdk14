@@ -1,21 +1,74 @@
+<h1>About this fork</h1>
+
+This is a JDK 1.4 backport of Robert Newson's "couchdb-lucene" version 0.4.
+
+Why JDK 1.4? Because my system is a 5-year old Mac running Mac OS X 10.3.9 ("Panther") and I'm pretty happy with it.
+
+Differences to Robert Newson's release:
+
+<ul>
+<li>The tests are not ported and can't be run.
+<li>No Maven build file yet. (Robert Newson's one is for Maven 2 and requires Java 1.5)
+<li>The dependencies are not included and must be obtained separately.
+</ul>
+
+List of Dependencies:
+
+<pre>
+lucene-core-2.4.1.jar
+lucene-analyzers-2.4.1.jar
+lucene-queries-2.4.1.jar
+json-lib-2.3-jdk13.jar
+js-14.jar (rhino1_7R2)
+commons-httpclient-3.1.jar
+commons-io-1.4.jar
+commons-beanutils-core-1.8.0.jar
+commons-collections-3.2.1.jar
+commons-codec-1.4.jar
+commons-lang-2.4.jar
+commons-logging-1.1.1.jar
+log4j-1.2.15.jar
+ezmorph-1.0.6.jar
+tika-core-0.4-jdk14.jar (for indexing files)
+tika-parsers-0.4-jdk14.jar (for indexing files)
+pdfbox-0.7.3.jar (for parsing PDF files)
+fontbox-0.1.0.jar (for parsing PDF files)
+poi-3.2.jar (for parsing Microsoft files, e.g. Word)
+poi-scratchpad-3.2.jar (for parsing Microsoft files, e.g. Word)
+nekohtml-1.9.9.jar (for parsing HTML files)
+</pre>
+
+Note: tika-core-0.4-jdk14.jar and tika-parsers-0.4-jdk14.jar are also based on my JDK 1.4 backports. You can get the binaries from the Downloads section.
+
 <h1>Issue Tracking</h1>
 
-Issue tracking at <a href="http://github.com/rnewson/couchdb-lucene/issues">github</a>.
+Issue tracking at <a href="http://github.com/jri/couchdb-lucene-jdk14/issues">github</a>.
 
 <h1>System Requirements</h1>
 
-Sun JDK 5 or higher is recommended.
+JDK 1.4 or higher is recommended.
 
-Couchdb-lucene is known to be incompatible with some versions of OpenJDK as it includes an earlier, and incompatible, version of the Rhino Javascript library. The version in Ubuntu 8.10 (6b12-0ubuntu6.4) is known to work and it uses Rhino 1.7R1.
+<h1>Build couchdb-lucene-jdk14</h1>
 
-<h1>Build couchdb-lucene</h1>
+You can build couchdb-lucene-0.4-jdk14.jar manually by performing these steps:
 
 <ol>
-<li>Install Maven 2.
-<li>checkout repository
-<li>type 'mvn'
-<li>configure couchdb (see below)
+<li>Checkout repository
+<li>Compiling the sources
+    <ol>
+    <li>go to couchdb-lucene-jdk14/src/main/java/com/github/rnewson/couchdb/lucene and compile with "javac -source 1.4"
+    <li>go to couchdb-lucene-jdk14/src/main/java/org/apache/nutch/analysis/lang and compile the sources.
+    </ol>
+<li>Building the jar
+    <ol>
+    <li>cd couchdb-lucene-jdk14/src/main/java
+    <li>jar cfm couchdb-lucene-0.4-jdk14.jar MANIFEST.MF com/github/rnewson/couchdb/lucene/*.class org/apache/nutch/analysis/lang/*.class
+    <li>cd ../resources/
+    <li>jar uf ../java/couchdb-lucene-0.4-jdk14.jar *
+    </ol>
 </ol>
+
+Alternatively you can get the binary from the Downloads section.
 
 <h1>Configure CouchDB</h1>
 
@@ -24,14 +77,19 @@ Couchdb-lucene is known to be incompatible with some versions of OpenJDK as it i
 os_process_timeout=60000 ; increase the timeout from 5 seconds.
 
 [external]
-fti=/usr/bin/java -server -jar /path/to/couchdb-lucene*-jar-with-dependencies.jar -search
+fti=/usr/bin/java -server -jar /path/to/couchdb-lucene-0.4-jdk14.jar -search
 
 [update_notification]
-indexer=/usr/bin/java -server -jar /path/to/couchdb-lucene*-jar-with-dependencies.jar -index
+indexer=/usr/bin/java -server -jar /path/to/couchdb-lucene-0.4-jdk14.jar -index
 
 [httpd_db_handlers]
 _fti = {couch_httpd_external, handle_external_req, <<"fti">>}
 </pre>
+
+
+The remainder is from Robert Newson's original README.
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
 
 <h1>Indexing Strategy</h1>
 

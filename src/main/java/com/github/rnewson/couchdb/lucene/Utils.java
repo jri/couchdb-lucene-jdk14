@@ -62,7 +62,7 @@ class Utils {
     }
 
     public static String throwableToJSON(final Throwable t) {
-        return error(t.getMessage() == null ? "Unknown error" : String.format("%s: %s", t.getClass(), t.getMessage()));
+        return error(t.getMessage() == null ? "Unknown error" : t.getClass() + ": " + t.getMessage());
     }
 
     public static String error(final String txt) {
@@ -77,8 +77,8 @@ class Utils {
         final StringWriter writer = new StringWriter();
         final PrintWriter printWriter = new PrintWriter(writer);
         if (t.getMessage() != null) {
-            printWriter.append(t.getMessage());
-            printWriter.append("\n");
+            printWriter.write(t.getMessage());
+            printWriter.write("\n");
         }
         t.printStackTrace(printWriter);
         return new JSONObject().element("code", code).element("body", "<pre>" + writer + "</pre>").toString();
@@ -104,7 +104,7 @@ class Utils {
     }
 
     public static String viewname(final JSONArray path) {
-        return String.format("%s/%s/%s", path.getString(0), path.getString(2), path.getString(3));
+        return path.getString(0) + "/" +  path.getString(2) + "/" + path.getString(3);
     }
 
 }

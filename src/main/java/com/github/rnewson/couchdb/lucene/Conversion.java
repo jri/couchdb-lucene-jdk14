@@ -41,7 +41,9 @@ final class Conversion {
     private static Object convertObject(final NativeObject obj) {
         final JSONObject result = new JSONObject();
 
-        for (final Object id : obj.getIds()) {
+        Object[] objs = obj.getIds();
+        for (int i = 0; i < objs.length; i++) {
+            final Object id = objs[i];
             String key;
             Object value;
             if (id instanceof String) {

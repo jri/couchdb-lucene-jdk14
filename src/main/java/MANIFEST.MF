@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Created-By: 1.4.2_12 (Apple Computer, Inc.)
+Main-Class: com.github.rnewson.couchdb.lucene.Main
+Class-Path: lucene-core-2.4.1.jar lucene-analyzers-2.4.1.jar lucene-queries-2.4.1.jar js-14.jar log4j-1.2.15.jar json-lib-2.3-jdk13.jar ezmorph-1.0.6.jar commons-lang-2.4.jar commons-logging-1.1.1.jar commons-collections-3.2.1.jar commons-beanutils-core-1.8.0.jar commons-httpclient-3.1.jar commons-codec-1.4.jar commons-io-1.4.jar tika-core-0.4-jdk14.jar tika-parsers-0.4-jdk14.jar pdfbox-0.7.3.jar fontbox-0.1.0.jar poi-3.2.jar poi-scratchpad-3.2.jar nekohtml-1.9.9.jar

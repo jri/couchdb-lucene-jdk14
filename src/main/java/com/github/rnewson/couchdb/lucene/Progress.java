@@ -18,6 +18,7 @@ package com.github.rnewson.couchdb.lucene;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -79,7 +80,9 @@ public final class Progress {
 
     public void removeDatabase(final String dbname) {
         final String prefix = dbname + "/";
-        for (final Object obj : new ArrayList(progress.getFields())) {
+        Iterator i = new ArrayList(progress.getFields()).iterator();
+        while (i.hasNext()) {
+            final Object obj = i.next();
             final Field field = (Field) obj;
             if (field.name().startsWith(prefix)) {
                 progress.removeField(field.name());

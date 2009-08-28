@@ -16,7 +16,7 @@ package com.github.rnewson.couchdb.lucene;
  * limitations under the License.
  */
 
-import static com.github.rnewson.couchdb.lucene.Utils.text;
+import com.github.rnewson.couchdb.lucene.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,7 +58,7 @@ public final class Tika {
         }
 
         // Add body text.
-        doc.add(text(fieldName, body, false));
+        doc.add(Utils.text(fieldName, body, false));
 
         // Add DC attributes.
         addDublinCoreAttributes(md, doc);
@@ -66,7 +66,7 @@ public final class Tika {
         // Detect language.
         final String language = LanguageIdentifier.identifyLanguage(body);
         if (language != null && language.length() > 0)
-            doc.add(text(DC + DublinCore.LANGUAGE, language, false));
+            doc.add(Utils.text(DC + DublinCore.LANGUAGE, language, false));
     }
 
     private void addDublinCoreAttributes(final Metadata md, final Document doc) {
@@ -90,7 +90,7 @@ public final class Tika {
 
     private void addAttribute(final String namespace, final String attributeName, final Metadata md, final Document doc) {
         if (md.get(attributeName) != null) {
-            doc.add(text(namespace + attributeName, md.get(attributeName), false));
+            doc.add(Utils.text(namespace + attributeName, md.get(attributeName), false));
         }
     }
 }

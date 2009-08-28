@@ -42,9 +42,9 @@ public final class RhinoDocument extends ScriptableObject {
 
     private static final Tika TIKA = new Tika();
 
-    private static final Map<String, Field.Index> Index = new HashMap<String, Field.Index>();
+    private static final Map Index = new HashMap();
 
-    private static final Map<String, Field.Store> Store = new HashMap<String, Field.Store>();
+    private static final Map Store = new HashMap();
 
     static {
         Store.put("no", Field.Store.NO);
@@ -123,7 +123,7 @@ public final class RhinoDocument extends ScriptableObject {
                 doc.add(new Field(field, asString, Field.Store.YES, Field.Index.NO));
             }
         } else {
-            doc.add(new Field(field, obj.toString(), Store.get(store), Index.get(index)));
+            doc.add(new Field(field, obj.toString(), (Field.Store) Store.get(store), (Field.Index) Index.get(index)));
         }
     }
 
@@ -149,7 +149,7 @@ public final class RhinoDocument extends ScriptableObject {
         final String docid = (String) cx.getThreadLocal("docid");
         final String field = args[0].toString();
         final String attname = args[1].toString();
-        final String url = DB.url(String.format("%s/%s/%s", dbname, DB.encode(docid), DB.encode(attname)));
+        final String url = DB.url(dbname + "/" +  DB.encode(docid) + "/" +  DB.encode(attname));
 
         final GetMethod get = new GetMethod(url);
         try {

@@ -41,9 +41,9 @@ final class Config {
 
     static final String INDEX_DIR = System.getProperty("couchdb.lucene.dir", "lucene");
 
-    static final int RAM_BUF = Integer.getInteger("couchdb.lucene.ram", 16);
+    static final int RAM_BUF = Integer.getInteger("couchdb.lucene.ram", 16).intValue();
 
-    static final int BATCH_SIZE = Integer.getInteger("couchdb.lucene.batch", 250);
+    static final int BATCH_SIZE = Integer.getInteger("couchdb.lucene.batch", 250).intValue();
 
     static final String DB_URL = System.getProperty("couchdb.url", "http://localhost:5984");
 
@@ -51,7 +51,7 @@ final class Config {
 
     static final String DB_PASSWORD = System.getProperty("couchdb.password");
 
-    static final int COMMIT_MIN = Integer.getInteger("couchdb.lucene.commit.min", 5000);
+    static final int COMMIT_MIN = Integer.getInteger("couchdb.lucene.commit.min", 5000).intValue();
 
     static final boolean LUCENE_DEBUG = Boolean.getBoolean("couchdb.lucene.debug");
 

@@ -16,15 +16,12 @@ package com.github.rnewson.couchdb.lucene;
  * limitations under the License.
  */
 
-import static com.github.rnewson.couchdb.lucene.Utils.docQuery;
-import static com.github.rnewson.couchdb.lucene.Utils.token;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import com.github.rnewson.couchdb.lucene.Utils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Scanner;
+import java.util.Iterator;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -73,11 +70,11 @@ public final class Index {
         }
 
         private long leniency() {
-            return MILLISECONDS.toNanos(Config.COMMIT_MIN);
+            return Config.COMMIT_MIN;
         }
 
         private long now() {
-            return System.nanoTime();
+            return System.currentTimeMillis();
         }
 
         public void run() {
@@ -161,7 +158,8 @@ public final class Index {
                 }
 
                 // Update all extant databases.
-                for (final String dbname : dbnames) {
+                for (int j = 0; j < dbnames.length; j++) {
+                    final String dbname = dbnames[j];
                     // Iterate through all views in all design documents.
                     final JSONObject designDocs = DB.getAllDocs(dbname, "_design", "_design0");
 
@@ -175,7 +173,9 @@ public final class Index {
                         final JSONObject fulltext = doc.getJSONObject("fulltext");
                         if (fulltext != null) {
                             delete_all = false;
-                            for (final Object obj : fulltext.keySet()) {
+                            Iterator it = fulltext.keySet().iterator();
+                            while (it.hasNext()) {
+                                final Object obj = it.next();
                                 final String key = (String) obj;
                                 final String sig = Utils.digest(fulltext.getString(key));
                                 final String defaults = fulltext.getJSONObject(key).optString("defaults", "{}");
@@ -186,8 +186,7 @@ public final class Index {
                                 fun = fun.replaceAll("^\"*", "");
                                 fun = fun.replaceAll("\"*$", "");
 
-                                final String viewname = String.format("%s/%s/%s", dbname, doc.getString(Config.ID)
-                                        .replaceFirst("_design/", ""), key);
+                                final String viewname = dbname + "/" + doc.getString(Config.ID).replaceFirst("_design/", "") + "/" + key;
 
                                 final Rhino rhino = new Rhino(dbname, defaults, fun);
                                 try {
@@ -263,13 +262,13 @@ public final class Index {
 
                     // New or updated document.
                     if (doc != null && !docid.startsWith("_design")) {
-                        writer.deleteDocuments(docQuery(viewname, row.getString("id")));
+                        writer.deleteDocuments(Utils.docQuery(viewname, row.getString("id")));
                         final Document[] docs = rhino.map(docid, doc.toString());
 
                         for (int j = 0; j < docs.length; j++) {
-                            docs[j].add(token(Config.DB, dbname, false));
-                            docs[j].add(token(Config.VIEW, viewname, false));
-                            docs[j].add(token(Config.ID, docid, true));
+                            docs[j].add(Utils.token(Config.DB, dbname, false));
+                            docs[j].add(Utils.token(Config.VIEW, viewname, false));
+                            docs[j].add(Utils.token(Config.ID, docid, true));
 
                             if (Utils.LOG.isTraceEnabled()) {
                                 Utils.LOG.trace("Adding " + docs[j]);
@@ -280,7 +279,7 @@ public final class Index {
 
                     // Deleted document.
                     if (value != null && value.optBoolean("deleted")) {
-                        writer.deleteDocuments(docQuery(viewname, row.getString("id")));
+                        writer.deleteDocuments(Utils.docQuery(viewname, row.getString("id")));
                     }
 
                     update_seq = row.getLong("key");
@@ -290,8 +289,8 @@ public final class Index {
             progress.update(viewname, new_sig, update_seq);
 
             final long duration = now() - start;
-            Utils.LOG.debug(String.format("%s: index is now at update_seq %,d (took %s).", viewname, update_seq,
-                    DurationFormatUtils.formatDurationHMS(NANOSECONDS.toMillis(duration))));
+            Utils.LOG.debug(viewname + ": index is now at update_seq " + update_seq +
+                " (took " + DurationFormatUtils.formatDurationHMS(duration) + ").");
         }
 
         private void deleteView(final String viewname, final Progress progress, final IndexWriter writer)
@@ -350,8 +349,11 @@ public final class Index {
         thread.start();
 
         final Scanner scanner = new Scanner(System.in, "UTF-8");
-        while (scanner.hasNextLine()) {
+        while (true) {
             final String line = scanner.nextLine();
+            if (line == null) {
+                break;
+            }
             final JSONObject obj = JSONObject.fromObject(line);
             if (obj.has("type") && obj.has("db")) {
                 indexer.setStale();

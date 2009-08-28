@@ -75,8 +75,8 @@ public final class Database {
     }
 
     public JSONObject getAllDocsBySeq(final String dbname, final long startkey) throws IOException {
-        return JSONObject.fromObject(get(String.format("%s/_all_docs_by_seq?startkey=%s&include_docs=true",
-                encode(dbname), startkey)));
+        return JSONObject.fromObject(get(encode(dbname) + "/_all_docs_by_seq?startkey=" + startkey +
+            "&include_docs=true"));
     }
 
     public boolean createDatabase(final String dbname) throws IOException {
@@ -88,34 +88,33 @@ public final class Database {
     }
 
     public boolean saveDocument(final String dbname, final String id, final String body) throws IOException {
-        return put(String.format("%s/%s", encode(dbname), id), body) == 201;
+        return put(encode(dbname) + "/" + id, body) == 201;
     }
 
     public JSONObject getAllDocs(final String dbname, final String startkey, final String endkey) throws IOException {
-        return JSONObject.fromObject(get(String.format(
-                "%s/_all_docs?startkey=%%22%s%%22&endkey=%%22%s%%22&include_docs=true", encode(dbname),
-                encode(startkey), encode(endkey))));
+        return JSONObject.fromObject(get(encode(dbname) + "/_all_docs?startkey=%22" + encode(startkey) +
+            "%22&endkey=%22" + encode(endkey) + "%22&include_docs=true"));
     }
 
     public JSONObject getAllDocsBySeq(final String dbname, final long startkey, final int limit) throws IOException {
-        return JSONObject.fromObject(get(String.format("%s/_all_docs_by_seq?startkey=%d&limit=%d&include_docs=true",
-                encode(dbname), startkey, limit)));
+        return JSONObject.fromObject(get(encode(dbname) + "/_all_docs_by_seq?startkey=" + startkey +
+            "&limit=" + limit + "&include_docs=true"));
     }
 
     public JSONObject getDoc(final String dbname, final String id) throws IOException {
-        return JSONObject.fromObject(get(String.format("%s/%s", encode(dbname), id)));
+        return JSONObject.fromObject(get(encode(dbname) + "/" +  id));
     }
 
-    public JSONObject getDocs(final String dbname, final String... ids) throws IOException {
+    public JSONObject getDocs(final String dbname, final String[] ids) throws IOException {
         final JSONArray keys = new JSONArray();
-        for (final String id : ids) {
+        for (int i = 0; i < ids.length; i++) {
+            final String id = ids[i];
             keys.add(id);
         }
         final JSONObject req = new JSONObject();
         req.element("keys", keys);
 
-        return JSONObject.fromObject(post(String.format("%s/_all_docs?include_docs=true", encode(dbname)), req
-                .toString()));
+        return JSONObject.fromObject(post(encode(dbname) + "/_all_docs?include_docs=true", req.toString()));
     }
 
     public JSONObject getInfo(final String dbname) throws IOException {
@@ -127,7 +126,7 @@ public final class Database {
     }
 
     String url(final String path) {
-        return String.format("%s/%s", url, path);
+        return url + "/" + path;
     }
 
     String encode(final String path) {
